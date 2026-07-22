@@ -1,6 +1,9 @@
 # 🔒 File Vault
 
 [![CI](https://github.com/kadeemj/File-Encryption-Tool/actions/workflows/ci.yml/badge.svg)](https://github.com/kadeemj/File-Encryption-Tool/actions/workflows/ci.yml)
+[![Deploy](https://github.com/kadeemj/File-Encryption-Tool/actions/workflows/deploy.yml/badge.svg)](https://github.com/kadeemj/File-Encryption-Tool/actions/workflows/deploy.yml)
+
+**Live app:** [https://kadeemj.github.io/File-Encryption-Tool/](https://kadeemj.github.io/File-Encryption-Tool/)
 
 A **client-side** file encryption / decryption web app. Everything happens in
 your browser using the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) —
