@@ -1,0 +1,294 @@
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 48px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.app__header {
+  text-align: center;
+}
+
+.app__header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  letter-spacing: -0.5px;
+}
+
+.app__tagline {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Card ---------------------------------------------------------------- */
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Tabs ---------------------------------------------------------------- */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.tab--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Dropzone ------------------------------------------------------------ */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg);
+}
+
+.dropzone:hover:not(.dropzone--disabled),
+.dropzone--active {
+  border-color: var(--accent);
+  background: rgba(79, 140, 255, 0.06);
+}
+
+.dropzone--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dropzone__prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-dim);
+}
+
+.dropzone__prompt strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.dropzone__file {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropzone__name {
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.dropzone__size {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* Password ------------------------------------------------------------ */
+.password {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.password__row {
+  display: flex;
+  gap: 8px;
+}
+
+.password__input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.password__input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.password__toggle {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-dim);
+  padding: 0 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.password__toggle:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.password__strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.password__strength small {
+  color: var(--text-dim);
+  min-width: 72px;
+}
+
+.meter {
+  flex: 1;
+  height: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  transition: width 0.2s;
+}
+
+.meter--0 span,
+.meter--1 span {
+  background: var(--danger);
+}
+.meter--2 span {
+  background: #f5a623;
+}
+.meter--3 span {
+  background: #b8d64a;
+}
+.meter--4 span {
+  background: var(--success);
+}
+
+/* Buttons ------------------------------------------------------------- */
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Result -------------------------------------------------------------- */
+.result {
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+}
+
+.result--working {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+}
+
+.result--error {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: var(--danger);
+}
+
+.result--done {
+  background: rgba(61, 220, 151, 0.08);
+  border: 1px solid rgba(61, 220, 151, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.result__label {
+  color: var(--text);
+  word-break: break-all;
+}
+
+.result__label span {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Footer -------------------------------------------------------------- */
+.app__footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
