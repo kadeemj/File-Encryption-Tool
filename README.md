@@ -36,6 +36,8 @@ payload, so it's only revealed after a successful decryption.
   `crypto.getRandomValues` are used.
 - Derived keys are created non-extractable — the raw key bytes can never be read
   back out, even by this app's own code.
+- Passwords are NFC-normalized before key derivation so equivalent Unicode
+  compositions unlock the same file.
 
 ## Project structure
 
@@ -57,9 +59,12 @@ npm run test:e2e     # end-to-end tests (Playwright)
 
 ## Limitations (v1)
 
-- Files are encrypted whole in memory. Comfortable up to ~100MB; multi-GB files
-  would need chunked/streaming encryption (a future enhancement — the format's
-  version byte leaves room for it).
+- Files are encrypted whole in memory. The UI rejects files over **100 MB**;
+  multi-GB files would need chunked/streaming encryption (a future enhancement —
+  the format's version byte leaves room for it).
+- Encrypt requires a password of at least **12 characters**, plus a matching
+  confirmation field. Decrypt still accepts any password length so older files
+  remain usable.
 
 ## Verifying the "your files never leave your browser" claim
 

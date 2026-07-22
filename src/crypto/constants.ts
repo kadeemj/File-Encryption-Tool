@@ -47,3 +47,21 @@ export const HEADER_LENGTH = MAGIC.length + 1 + SALT_LENGTH + IV_LENGTH
 
 /** Extension appended to encrypted files. */
 export const ENCRYPTED_EXTENSION = '.enc'
+
+/**
+ * AES-GCM authentication tag length in bytes. Ciphertext shorter than this
+ * cannot be valid — reject before paying the PBKDF2 cost.
+ */
+export const GCM_TAG_LENGTH = 16
+
+/** Soft cap on in-memory encrypt/decrypt. Larger files risk freezing the tab. */
+export const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100 MiB
+
+/** Minimum password length enforced when choosing a new password (encrypt). */
+export const MIN_PASSWORD_LENGTH = 12
+
+/** Fallback download name when a decrypted filename is empty or unsafe. */
+export const FALLBACK_FILENAME = 'decrypted.bin'
+
+/** Max length for a sanitized download filename (common filesystem limit). */
+export const MAX_FILENAME_LENGTH = 255

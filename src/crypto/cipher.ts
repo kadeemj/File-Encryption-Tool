@@ -1,7 +1,21 @@
-import { ENCRYPTED_EXTENSION, IV_LENGTH, SALT_LENGTH } from './constants'
+import {
+  ENCRYPTED_EXTENSION,
+  IV_LENGTH,
+  MAX_FILE_SIZE,
+  SALT_LENGTH,
+} from './constants'
 import { pack, packPayload, unpack, unpackPayload } from './container'
-import { DecryptionError } from './errors'
+import { DecryptionError, InvalidFileError } from './errors'
+import { sanitizeFilename } from './filename'
 import { deriveKey } from './kdf'
+
+function assertFileSize(file: File): void {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new InvalidFileError(
+      `File is too large. Maximum size is ${Math.floor(MAX_FILE_SIZE / (1024 * 1024))} MB.`,
+    )
+  }
+}
 
 /** The result of an encrypt or decrypt operation, ready to hand to the user. */
 export interface CryptoResult {
@@ -22,6 +36,7 @@ export async function encryptFile(
   file: File,
   password: string,
 ): Promise<CryptoResult> {
+  assertFileSize(file)
   const data = new Uint8Array(await file.arrayBuffer())
   const payload = packPayload({ filename: file.name, data })
 
@@ -51,6 +66,7 @@ export async function decryptFile(
   file: File,
   password: string,
 ): Promise<CryptoResult> {
+  assertFileSize(file)
   const bytes = new Uint8Array(await file.arrayBuffer())
   const { salt, iv, ciphertext } = unpack(bytes) // throws InvalidFileError
 
@@ -71,6 +87,6 @@ export async function decryptFile(
   const payload = unpackPayload(new Uint8Array(plaintext))
   return {
     blob: new Blob([payload.data], { type: 'application/octet-stream' }),
-    filename: payload.filename,
+    filename: sanitizeFilename(payload.filename),
   }
 }

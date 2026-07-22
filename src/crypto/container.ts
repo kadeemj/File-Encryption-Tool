@@ -1,5 +1,6 @@
 import {
   FORMAT_VERSION,
+  GCM_TAG_LENGTH,
   HEADER_LENGTH,
   IV_LENGTH,
   MAGIC,
@@ -77,6 +78,12 @@ export function unpack(bytes: Bytes): Container {
   const iv = bytes.slice(offset, offset + IV_LENGTH)
   offset += IV_LENGTH
   const ciphertext = bytes.slice(offset)
+
+  // AES-GCM ciphertext must include at least the authentication tag.
+  // Reject early so we don't burn a full PBKDF2 stretch on truncated junk.
+  if (ciphertext.length < GCM_TAG_LENGTH) {
+    throw new InvalidFileError('Encrypted file is truncated or incomplete.')
+  }
 
   return { salt, iv, ciphertext }
 }

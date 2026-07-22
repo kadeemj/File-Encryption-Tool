@@ -21,10 +21,14 @@ export async function deriveKey(
   password: string,
   salt: Bytes,
 ): Promise<CryptoKey> {
+  // NFC so visually identical passwords typed via different IME compositions
+  // (e.g. "é" vs "e" + combining accent) derive the same key.
+  const normalized = password.normalize('NFC')
+
   // Import the raw password bytes as key material PBKDF2 can consume.
   const passwordKey = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(password),
+    new TextEncoder().encode(normalized),
     'PBKDF2',
     false, // not extractable
     ['deriveKey'],

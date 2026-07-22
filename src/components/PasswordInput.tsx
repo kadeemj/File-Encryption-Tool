@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MIN_PASSWORD_LENGTH } from '../crypto'
 
 interface PasswordInputProps {
   value: string
@@ -6,6 +7,9 @@ interface PasswordInputProps {
   disabled?: boolean
   /** Show a rough strength meter (only meaningful when choosing a new password). */
   showStrength?: boolean
+  /** When set, show a second field and require an exact match before submit. */
+  confirmValue?: string
+  onConfirmChange?: (value: string) => void
 }
 
 interface Strength {
@@ -36,9 +40,17 @@ export function PasswordInput({
   onChange,
   disabled,
   showStrength,
+  confirmValue,
+  onConfirmChange,
 }: PasswordInputProps) {
   const [visible, setVisible] = useState(false)
   const strength = showStrength ? estimateStrength(value) : null
+  const requireConfirm = confirmValue !== undefined && onConfirmChange !== undefined
+  const tooShort =
+    showStrength && value.length > 0 && value.length < MIN_PASSWORD_LENGTH
+  const whitespaceOnly = showStrength && value.length > 0 && value.trim().length === 0
+  const mismatch =
+    requireConfirm && confirmValue.length > 0 && value !== confirmValue
 
   return (
     <div className="password">
@@ -64,6 +76,38 @@ export function PasswordInput({
           {visible ? 'Hide' : 'Show'}
         </button>
       </div>
+
+      {requireConfirm && (
+        <div className="password__row">
+          <input
+            type={visible ? 'text' : 'password'}
+            className="password__input"
+            placeholder="Confirm password"
+            value={confirmValue}
+            disabled={disabled}
+            autoComplete="off"
+            onChange={(e) => onConfirmChange(e.target.value)}
+            data-testid="password-confirm-input"
+          />
+        </div>
+      )}
+
+      {tooShort && (
+        <small className="password__hint" data-testid="password-too-short">
+          Password must be at least {MIN_PASSWORD_LENGTH} characters.
+        </small>
+      )}
+      {whitespaceOnly && (
+        <small className="password__hint" data-testid="password-whitespace">
+          Password cannot be only whitespace.
+        </small>
+      )}
+      {mismatch && (
+        <small className="password__hint" data-testid="password-mismatch">
+          Passwords do not match.
+        </small>
+      )}
+
       {strength && value && (
         <div className="password__strength" data-testid="password-strength">
           <div className={`meter meter--${strength.score}`}>

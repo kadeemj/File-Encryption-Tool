@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 import { Dropzone } from './components/Dropzone'
 import { ModeTabs, type Mode } from './components/ModeTabs'
@@ -9,16 +9,30 @@ import {
   DecryptionError,
   encryptFile,
   InvalidFileError,
+  isPasswordAcceptable,
   type CryptoResult,
 } from './crypto'
+
+function isCryptoAvailable(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.isSecureContext &&
+    typeof crypto !== 'undefined' &&
+    !!crypto.subtle
+  )
+}
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('encrypt')
   const [file, setFile] = useState<File | null>(null)
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [result, setResult] = useState<CryptoResult | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [cryptoOk] = useState(isCryptoAvailable)
+  // Synchronous lock — React state alone can miss a double-click before re-render.
+  const inFlight = useRef(false)
 
   /** Any input change invalidates a previous result/error. */
   function reset() {
@@ -28,7 +42,11 @@ export default function App() {
   }
 
   async function handleSubmit() {
-    if (!file || !password || status === 'working') return
+    if (!file || !password || inFlight.current || status === 'working') return
+    if (mode === 'encrypt') {
+      if (!isPasswordAcceptable(password) || password !== confirmPassword) return
+    }
+    inFlight.current = true
     reset()
     setStatus('working')
     try {
@@ -44,6 +62,8 @@ export default function App() {
           : 'Something went wrong while processing the file.'
       setErrorMessage(message)
       setStatus('error')
+    } finally {
+      inFlight.current = false
     }
   }
 
@@ -60,7 +80,11 @@ export default function App() {
   }
 
   const busy = status === 'working'
-  const canSubmit = Boolean(file) && password.length > 0 && !busy
+  const passwordOk =
+    mode === 'encrypt'
+      ? isPasswordAcceptable(password) && password === confirmPassword
+      : password.length > 0
+  const canSubmit = Boolean(file) && passwordOk && !busy && cryptoOk
 
   return (
     <main className="app">
@@ -72,14 +96,22 @@ export default function App() {
         </p>
       </header>
 
+      {!cryptoOk && (
+        <div className="banner banner--error" role="alert" data-testid="secure-context-warning">
+          Web Crypto is unavailable. Open this app over HTTPS or on localhost —
+          encryption cannot run in an insecure context.
+        </div>
+      )}
+
       <section className="card">
         <ModeTabs
           mode={mode}
           onChange={(m) => {
             setMode(m)
+            setConfirmPassword('')
             reset()
           }}
-          disabled={busy}
+          disabled={busy || !cryptoOk}
         />
 
         <Dropzone
@@ -88,7 +120,13 @@ export default function App() {
             setFile(f)
             reset()
           }}
-          disabled={busy}
+          onReject={(msg) => {
+            setFile(null)
+            setResult(null)
+            setErrorMessage(msg)
+            setStatus('error')
+          }}
+          disabled={busy || !cryptoOk}
         />
 
         <PasswordInput
@@ -97,7 +135,16 @@ export default function App() {
             setPassword(p)
             reset()
           }}
-          disabled={busy}
+          confirmValue={mode === 'encrypt' ? confirmPassword : undefined}
+          onConfirmChange={
+            mode === 'encrypt'
+              ? (p) => {
+                  setConfirmPassword(p)
+                  reset()
+                }
+              : undefined
+          }
+          disabled={busy || !cryptoOk}
           showStrength={mode === 'encrypt'}
         />
 

@@ -11,6 +11,7 @@ async function runOperation(
   page: Page,
   file: { name: string; buffer: Buffer },
   password: string,
+  opts: { confirm?: boolean } = {},
 ): Promise<string> {
   await page.getByTestId('file-input').setInputFiles({
     name: file.name,
@@ -18,6 +19,12 @@ async function runOperation(
     buffer: file.buffer,
   })
   await page.getByTestId('password-input').fill(password)
+  if (opts.confirm !== false) {
+    const confirm = page.getByTestId('password-confirm-input')
+    if (await confirm.count()) {
+      await confirm.fill(password)
+    }
+  }
   await page.getByTestId('submit-button').click()
 
   await expect(page.getByTestId('result')).toBeVisible()
