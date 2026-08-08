@@ -13,8 +13,8 @@ your files and password **never leave your device** and there is no backend.
 
 1. You pick a file and enter a password.
 2. The password is stretched into a 256-bit AES key with **PBKDF2-HMAC-SHA-256**
-   (600,000 iterations + a random per-file salt).
-3. The file is encrypted with **AES-256-GCM**, an *authenticated* cipher that
+   (1,000,000 iterations + a random per-file salt).
+3. The file is encrypted with **AES-256-GCM**, an _authenticated_ cipher that
    also detects tampering and wrong passwords.
 4. You download the encrypted `.enc` file. To decrypt, upload it and supply the
    same password.

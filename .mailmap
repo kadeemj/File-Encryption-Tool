@@ -1,0 +1,8 @@
+# Map AI coding-agent identities to the canonical author so commits made via
+
+# Claude Code or Cursor are attributed to the repo owner, not the tool.
+
+# Format: Canonical Name <canonical email> <commit email>
+
+Kadeem Jeffery <github@kvv.cx> <noreply@anthropic.com>
+Kadeem Jeffery <github@kvv.cx> <noreply@cursor.com>
