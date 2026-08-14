@@ -1,18 +1,33 @@
 import {
   ENCRYPTED_EXTENSION,
   IV_LENGTH,
+  MAX_CONTAINER_SIZE,
   MAX_FILE_SIZE,
+  MAX_PASSWORD_BYTES,
   SALT_LENGTH,
 } from './constants'
 import { pack, packPayload, unpack, unpackPayload } from './container'
-import { DecryptionError, InvalidFileError } from './errors'
+import {
+  DecryptionError,
+  InvalidFileError,
+  PasswordPolicyError,
+} from './errors'
 import { sanitizeFilename } from './filename'
 import { deriveKey } from './kdf'
+import { isPasswordAcceptable, passwordByteLength } from './password'
 
-function assertFileSize(file: File): void {
-  if (file.size > MAX_FILE_SIZE) {
+function assertFileSize(file: File, maxSize: number): void {
+  if (file.size > maxSize) {
     throw new InvalidFileError(
-      `File is too large. Maximum size is ${Math.floor(MAX_FILE_SIZE / (1024 * 1024))} MB.`,
+      `File is too large. Maximum size is ${Math.floor(maxSize / (1024 * 1024))} MB.`,
+    )
+  }
+}
+
+function assertPasswordSize(password: string): void {
+  if (passwordByteLength(password) > MAX_PASSWORD_BYTES) {
+    throw new PasswordPolicyError(
+      `Password is too long. Maximum size is ${MAX_PASSWORD_BYTES} UTF-8 bytes.`,
     )
   }
 }
@@ -36,7 +51,13 @@ export async function encryptFile(
   file: File,
   password: string,
 ): Promise<CryptoResult> {
-  assertFileSize(file)
+  assertFileSize(file, MAX_FILE_SIZE)
+  assertPasswordSize(password)
+  if (!isPasswordAcceptable(password)) {
+    throw new PasswordPolicyError(
+      'Password is too short or contains only whitespace.',
+    )
+  }
   const data = new Uint8Array(await file.arrayBuffer())
   const payload = packPayload({ filename: file.name, data })
 
@@ -49,9 +70,12 @@ export async function encryptFile(
   )
 
   const container = pack({ salt, iv, ciphertext })
+  const opaqueName = Array.from(salt, (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('')
   return {
     blob: new Blob([container], { type: 'application/octet-stream' }),
-    filename: file.name + ENCRYPTED_EXTENSION,
+    filename: `encrypted-${opaqueName}${ENCRYPTED_EXTENSION}`,
   }
 }
 
@@ -66,7 +90,8 @@ export async function decryptFile(
   file: File,
   password: string,
 ): Promise<CryptoResult> {
-  assertFileSize(file)
+  assertFileSize(file, MAX_CONTAINER_SIZE)
+  assertPasswordSize(password)
   const bytes = new Uint8Array(await file.arrayBuffer())
   const { salt, iv, ciphertext } = unpack(bytes) // throws InvalidFileError
 

@@ -10,6 +10,9 @@ import {
   encryptFile,
   InvalidFileError,
   isPasswordAcceptable,
+  PasswordPolicyError,
+  MAX_CONTAINER_SIZE,
+  MAX_FILE_SIZE,
   type CryptoResult,
 } from './crypto'
 
@@ -57,12 +60,16 @@ export default function App() {
     } catch (err) {
       // Known, user-facing errors carry a safe message; anything else is generic.
       const message =
-        err instanceof DecryptionError || err instanceof InvalidFileError
+        err instanceof DecryptionError ||
+        err instanceof InvalidFileError ||
+        err instanceof PasswordPolicyError
           ? err.message
           : 'Something went wrong while processing the file.'
       setErrorMessage(message)
       setStatus('error')
     } finally {
+      setPassword('')
+      setConfirmPassword('')
       inFlight.current = false
     }
   }
@@ -77,6 +84,9 @@ export default function App() {
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
+    setResult(null)
+    setFile(null)
+    setStatus('idle')
   }
 
   const busy = status === 'working'
@@ -108,6 +118,7 @@ export default function App() {
           mode={mode}
           onChange={(m) => {
             setMode(m)
+            setPassword('')
             setConfirmPassword('')
             reset()
           }}
@@ -116,6 +127,7 @@ export default function App() {
 
         <Dropzone
           file={file}
+          maxSize={mode === 'encrypt' ? MAX_FILE_SIZE : MAX_CONTAINER_SIZE}
           onFile={(f) => {
             setFile(f)
             reset()

@@ -21,3 +21,11 @@ export class DecryptionError extends Error {
     this.name = 'DecryptionError'
   }
 }
+
+/** The password does not meet the crypto API's input policy. */
+export class PasswordPolicyError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'PasswordPolicyError'
+  }
+}

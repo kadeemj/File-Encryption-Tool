@@ -62,8 +62,15 @@ export const GCM_TAG_LENGTH = 16;
 /** Soft cap on in-memory encrypt/decrypt. Larger files risk freezing the tab. */
 export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MiB
 
+/** Maximum encrypted container size for the plaintext limit and format overhead. */
+export const MAX_CONTAINER_SIZE =
+  MAX_FILE_SIZE + HEADER_LENGTH + 2 + 0xffff + GCM_TAG_LENGTH;
+
 /** Minimum password length enforced when choosing a new password (encrypt). */
-export const MIN_PASSWORD_LENGTH = 12;
+export const MIN_PASSWORD_LENGTH = 16;
+
+/** Maximum normalized password size accepted by the crypto API. */
+export const MAX_PASSWORD_BYTES = 1024;
 
 /** Fallback download name when a decrypted filename is empty or unsafe. */
 export const FALLBACK_FILENAME = "decrypted.bin";

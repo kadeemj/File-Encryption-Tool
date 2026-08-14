@@ -16,8 +16,8 @@ your files and password **never leave your device** and there is no backend.
    (1,000,000 iterations + a random per-file salt).
 3. The file is encrypted with **AES-256-GCM**, an _authenticated_ cipher that
    also detects tampering and wrong passwords.
-4. You download the encrypted `.enc` file. To decrypt, upload it and supply the
-   same password.
+4. You download the encrypted `.enc` file. Its outer name is opaque. To decrypt,
+   upload it and supply the same password.
 
 ### Encrypted file format
 
@@ -27,7 +27,8 @@ your files and password **never leave your device** and there is no backend.
 
 The salt and IV are not secret and are stored in the clear (they must be, to
 re-derive the key). The **original filename is hidden inside** the encrypted
-payload, so it's only revealed after a successful decryption.
+payload, so it's only revealed after a successful decryption. The encrypted
+download uses a random name and does not reveal the original filename.
 
 ## Security notes
 
@@ -65,9 +66,9 @@ npm run test:e2e     # end-to-end tests (Playwright)
 - Files are encrypted whole in memory. The UI rejects files over **100 MB**;
   multi-GB files would need chunked/streaming encryption (a future enhancement —
   the format's version byte leaves room for it).
-- Encrypt requires a password of at least **12 characters**, plus a matching
-  confirmation field. Decrypt still accepts any password length so older files
-  remain usable.
+- Encrypt requires a password of at least **16 characters**, plus a matching
+  confirmation field. Both modes limit input to 1,024 normalized UTF-8 bytes so
+  browser work stays bounded.
 
 ## Verifying the "your files never leave your browser" claim
 

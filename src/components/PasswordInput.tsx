@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { MIN_PASSWORD_LENGTH } from '../crypto'
+import {
+  MAX_PASSWORD_BYTES,
+  MIN_PASSWORD_LENGTH,
+  passwordByteLength,
+} from '../crypto'
 
 interface PasswordInputProps {
   value: string
@@ -48,6 +52,8 @@ export function PasswordInput({
   const requireConfirm = confirmValue !== undefined && onConfirmChange !== undefined
   const tooShort =
     showStrength && value.length > 0 && value.length < MIN_PASSWORD_LENGTH
+  const tooLong =
+    showStrength && passwordByteLength(value) > MAX_PASSWORD_BYTES
   const whitespaceOnly = showStrength && value.length > 0 && value.trim().length === 0
   const mismatch =
     requireConfirm && confirmValue.length > 0 && value !== confirmValue
@@ -61,6 +67,7 @@ export function PasswordInput({
           placeholder="Password"
           value={value}
           disabled={disabled}
+          maxLength={MAX_PASSWORD_BYTES}
           autoComplete="off"
           onChange={(e) => onChange(e.target.value)}
           data-testid="password-input"
@@ -85,6 +92,7 @@ export function PasswordInput({
             placeholder="Confirm password"
             value={confirmValue}
             disabled={disabled}
+            maxLength={MAX_PASSWORD_BYTES}
             autoComplete="off"
             onChange={(e) => onConfirmChange(e.target.value)}
             data-testid="password-confirm-input"
@@ -95,6 +103,11 @@ export function PasswordInput({
       {tooShort && (
         <small className="password__hint" data-testid="password-too-short">
           Password must be at least {MIN_PASSWORD_LENGTH} characters.
+        </small>
+      )}
+      {tooLong && (
+        <small className="password__hint" data-testid="password-too-long">
+          Password must be at most {MAX_PASSWORD_BYTES} UTF-8 bytes.
         </small>
       )}
       {whitespaceOnly && (

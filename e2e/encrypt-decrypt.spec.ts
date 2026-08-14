@@ -6,13 +6,13 @@ const PASSWORD = 'correct horse battery staple'
 // Include a non-ASCII char to prove byte-accurate round-tripping.
 const ORIGINAL = Buffer.from('Top secret: the launch code is 0000. 🚀', 'utf8')
 
-/** Upload a file, enter a password, run the current mode, return the download path. */
+/** Upload a file, run the current mode, and return the result name and path. */
 async function runOperation(
   page: Page,
   file: { name: string; buffer: Buffer },
   password: string,
   opts: { confirm?: boolean } = {},
-): Promise<string> {
+): Promise<{ filename: string; path: string }> {
   await page.getByTestId('file-input').setInputFiles({
     name: file.name,
     mimeType: 'application/octet-stream',
@@ -28,11 +28,12 @@ async function runOperation(
   await page.getByTestId('submit-button').click()
 
   await expect(page.getByTestId('result')).toBeVisible()
+  const filename = await page.getByTestId('result-filename').innerText()
   const downloadPromise = page.waitForEvent('download')
   await page.getByTestId('download-button').click()
   const download = await downloadPromise
   const path = await download.path()
-  return path
+  return { filename, path: path! }
 }
 
 test('encrypts a file and decrypts it back to the original bytes', async ({
@@ -45,29 +46,37 @@ test('encrypts a file and decrypts it back to the original bytes', async ({
     'aria-selected',
     'true',
   )
-  const encPath = await runOperation(page, { name: NAME, buffer: ORIGINAL }, PASSWORD)
-  await expect(page.getByTestId('result-filename')).toHaveText(NAME + '.enc')
+  const encrypted = await runOperation(
+    page,
+    { name: NAME, buffer: ORIGINAL },
+    PASSWORD,
+  )
+  expect(encrypted.filename).toMatch(/^encrypted-[0-9a-f]{32}\.enc$/)
 
   // Decrypt the just-produced file with the same password.
   await page.getByTestId('mode-decrypt').click()
-  const encBuffer = await readFile(encPath)
-  const decPath = await runOperation(
+  const encBuffer = await readFile(encrypted.path)
+  const decrypted = await runOperation(
     page,
     { name: NAME + '.enc', buffer: encBuffer },
     PASSWORD,
   )
 
   // The original filename is restored, and the bytes match exactly.
-  await expect(page.getByTestId('result-filename')).toHaveText(NAME)
-  const recovered = await readFile(decPath)
+  expect(decrypted.filename).toBe(NAME)
+  const recovered = await readFile(decrypted.path)
   expect(recovered.equals(ORIGINAL)).toBe(true)
 })
 
 test('shows a friendly error when the password is wrong', async ({ page }) => {
   await page.goto('/')
 
-  const encPath = await runOperation(page, { name: NAME, buffer: ORIGINAL }, PASSWORD)
-  const encBuffer = await readFile(encPath)
+  const encrypted = await runOperation(
+    page,
+    { name: NAME, buffer: ORIGINAL },
+    PASSWORD,
+  )
+  const encBuffer = await readFile(encrypted.path)
 
   await page.getByTestId('mode-decrypt').click()
   await page.getByTestId('file-input').setInputFiles({
